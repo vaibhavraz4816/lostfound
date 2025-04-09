@@ -21,12 +21,11 @@ def post_item():
     title = request.form['title']
     desc = request.form['desc']
     img = request.files['image']
-    
+
     unique_name = f"{uuid.uuid4().hex}_{secure_filename(img.filename)}"
     path = os.path.join(UPLOAD_FOLDER, unique_name)
     img.save(path)
 
-    # Match against DB entries
     matched = None
     existing = get_items('found' if item_type == 'lost' else 'lost')
     for item in existing:
@@ -50,5 +49,10 @@ def view_items(item_type):
     items = get_items(item_type)
     return render_template('list.html', items=items, type=item_type)
 
+@app.route('/health')
+def health():
+    return "OK"
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

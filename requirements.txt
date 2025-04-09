@@ -1,3 +1,5 @@
 flask
+werkzeug
 pillow
-imagehash
+numpy
+opencv-python

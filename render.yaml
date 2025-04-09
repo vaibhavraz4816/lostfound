@@ -1,9 +1,6 @@
 services:
   - type: web
-    name: lostfound-app
-    runtime: python
-    buildCommand: ""
+    name: lost-found-app
+    env: python
+    buildCommand: pip install -r requirements.txt
     startCommand: python app.py
-    envVars:
-      - key: FLASK_ENV
-        value: production

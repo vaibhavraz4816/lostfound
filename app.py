@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
-import uuid
 import sqlite3
 from werkzeug.utils import secure_filename
 from image_match import is_similar
 from models import init_db, insert_item, get_items
+import uuid
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads'
@@ -52,6 +52,10 @@ def view_items(item_type):
 
 @app.route('/delete', methods=['POST'])
 def delete_item():
+    pin = request.form['pin']
+    if pin != '1234':
+        return "Invalid PIN. Deletion not allowed.", 403
+
     item_id = request.form['id']
     image_path = request.form['image']
 

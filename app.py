@@ -1,14 +1,13 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
 import os
+import uuid
+import sqlite3
 from werkzeug.utils import secure_filename
 from image_match import is_similar
 from models import init_db, insert_item, get_items
-import uuid
 
 app = Flask(__name__)
-
-# Use absolute path for saving files correctly on Render
-UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
+UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 init_db()
@@ -24,25 +23,18 @@ def post_item():
     desc = request.form['desc']
     img = request.files['image']
 
-    # Save with a unique secure filename
     unique_name = f"{uuid.uuid4().hex}_{secure_filename(img.filename)}"
     path = os.path.join(UPLOAD_FOLDER, unique_name)
     img.save(path)
 
-    # Match logic
     matched = None
-    opposite_type = 'found' if item_type == 'lost' else 'lost'
-    existing = get_items(opposite_type)
-
+    existing = get_items('found' if item_type == 'lost' else 'lost')
     for item in existing:
-        existing_path = os.path.join(app.root_path, item[4].replace('/', os.sep))
-        if os.path.exists(existing_path) and is_similar(existing_path, path):
+        if is_similar(item[4], path):
             matched = item
             break
 
-    # Save only the relative path to DB (UNIX-style)
-    relative_path = f'static/uploads/{unique_name}'
-    insert_item(item_type, title, desc, relative_path)
+    insert_item(item_type, title, desc, path)
 
     if matched:
         return render_template('match.html', item={
@@ -57,6 +49,22 @@ def post_item():
 def view_items(item_type):
     items = get_items(item_type)
     return render_template('list.html', items=items, type=item_type)
+
+@app.route('/delete', methods=['POST'])
+def delete_item():
+    item_id = request.form['id']
+    image_path = request.form['image']
+
+    if os.path.exists(image_path):
+        os.remove(image_path)
+
+    conn = sqlite3.connect('items.db')
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM items WHERE id = ?", (item_id,))
+    conn.commit()
+    conn.close()
+
+    return redirect(request.referrer or '/')
 
 @app.route('/health')
 def health():

@@ -6,7 +6,9 @@ from models import init_db, insert_item, get_items
 import uuid
 
 app = Flask(__name__)
-UPLOAD_FOLDER = 'static/uploads'
+
+# Use absolute path for saving files correctly on Render
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 init_db()
@@ -22,19 +24,25 @@ def post_item():
     desc = request.form['desc']
     img = request.files['image']
 
-    # Ensure the file path is safe and Linux-compatible
+    # Save with a unique secure filename
     unique_name = f"{uuid.uuid4().hex}_{secure_filename(img.filename)}"
-    path = os.path.join(UPLOAD_FOLDER, unique_name).replace("\\", "/")
+    path = os.path.join(UPLOAD_FOLDER, unique_name)
     img.save(path)
 
+    # Match logic
     matched = None
-    existing = get_items('found' if item_type == 'lost' else 'lost')
+    opposite_type = 'found' if item_type == 'lost' else 'lost'
+    existing = get_items(opposite_type)
+
     for item in existing:
-        if is_similar(item[4], path):
+        existing_path = os.path.join(app.root_path, item[4].replace('/', os.sep))
+        if os.path.exists(existing_path) and is_similar(existing_path, path):
             matched = item
             break
 
-    insert_item(item_type, title, desc, path)
+    # Save only the relative path to DB (UNIX-style)
+    relative_path = f'static/uploads/{unique_name}'
+    insert_item(item_type, title, desc, relative_path)
 
     if matched:
         return render_template('match.html', item={

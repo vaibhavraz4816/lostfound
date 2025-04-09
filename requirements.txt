@@ -3,3 +3,4 @@ werkzeug
 pillow
 numpy
 opencv-python
+imagehash

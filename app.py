@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
 import os
 from werkzeug.utils import secure_filename
 from image_match import is_similar
@@ -22,8 +22,9 @@ def post_item():
     desc = request.form['desc']
     img = request.files['image']
 
+    # Ensure the file path is safe and Linux-compatible
     unique_name = f"{uuid.uuid4().hex}_{secure_filename(img.filename)}"
-    path = os.path.join(UPLOAD_FOLDER, unique_name)
+    path = os.path.join(UPLOAD_FOLDER, unique_name).replace("\\", "/")
     img.save(path)
 
     matched = None

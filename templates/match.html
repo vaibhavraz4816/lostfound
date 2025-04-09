@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>🔍 Match Found!</h2>
+<p><strong>Title:</strong> {{ item.title }}</p>
+<p><strong>Description:</strong> {{ item.desc }}</p>
+<img src="/{{ item.image }}" width="300" class="img-thumbnail mt-2">
+<br><br><a href="/" class="btn btn-secondary">Back</a>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Report Lost or Found Item</h2>
+<form method="post" enctype="multipart/form-data" action="/post">
+  <div class="mb-3">
+    <label class="form-label">Type</label>
+    <select name="type" class="form-control">
+      <option value="lost">Lost</option>
+      <option value="found">Found</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Title</label>
+    <input type="text" name="title" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Description</label>
+    <textarea name="desc" class="form-control"></textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Image</label>
+    <input type="file" name="image" class="form-control">
+  </div>
+  <input type="submit" value="Submit" class="btn btn-primary">
+</form>
+{% endblock %}
